@@ -14,14 +14,16 @@ button = Button(18)
 
 # Setting up Temp and Hum Sensor
 DHT_SENSOR = Adafruit_DHT.DHT22
-DHT_PIN = 4    # GPIO4 pin of dht22 date
+DHT_PIN = 17    # GPIO17 pin of dht22 date
 
 # Creating LCD object
 lcd = I2C_LCD_driver.lcd()
+lcd.lcd_display_string('Starting...',1,0)
+sleep(2)
 lcd.lcd_clear()
 cleared = False
 
-isOn = False
+isOn = True
 
 count = 0
 
@@ -31,17 +33,26 @@ while True:
     # Checking if button is pressed
     if button.is_pressed:
         isOn = not isOn
-        print('pressed')
+        #print('pressed')
         lcd.lcd_display_string('X',2,15)
         button.wait_for_release()
 
     # Checking status and turning LEDs on/off
+    #lcd.lcd_clear()
+    #lcd.lcd_display_string('before if',1,0)
     if isOn:
         led_red.off()
         led_green.on()
+        #lcd.lcd_clear()
+        #lcd.lcd_display_string('in if',1,0)
 
         # Getting temperature and humidity
+        
         humidity, temperature = Adafruit_DHT.read_retry(DHT_SENSOR, DHT_PIN)    
+        
+
+        #lcd.lcd_clear()
+        #lcd.lcd_display_string('after tf',1,0)
 
         if humidity is not None and temperature is not None:
 
@@ -53,7 +64,8 @@ while True:
             data = [timestampStr, str(round(temperature,1)), str(round(humidity,1))]
 
             # Writing data to csv file
-            with open('TempHum/tempHumData.csv','a') as f:
+            path = r'/home/pi/PiProjects/TempHum/tempHumData.csv'
+            with open(path,'a') as f:
                 writer = csv.writer(f,delimiter=',')
                 writer.writerow(data)
 
@@ -69,7 +81,7 @@ while True:
             cleared = False
         else:
             lcd.lcd_display_string('Error reading data!',1,0)
-            print("Failed to read data.")
+            #print("Failed to read data.")
     else:
         led_red.on()
         led_green.off()
@@ -85,5 +97,5 @@ while True:
     lcd.lcd_display_string(str(count),2,15)
     sleep(0.1)
 
-    
+
     
